@@ -112,7 +112,7 @@ void sensors_push(char *baseurl, time_t timestamp, char *device, int value) {
 	CURL *curl;
 	char url[512];
 
-	sprintf(url, "%s?time=%ld&id=%s&value=%d", baseurl, timestamp, device, value);
+	sprintf(url, "%s/%s/%ld/%d", baseurl, device, timestamp, value);
 	printf("[+] saving to: %s\n", url);
 
 	curl = curl_easy_init();
