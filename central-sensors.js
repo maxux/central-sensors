@@ -10,8 +10,30 @@ var db = new sqlite3.Database('sensors.sqlite3');
 // console display
 //
 var devices = {
-    "10-000802776315": "Living Room 1",
-    "10-000802775cc7": "Living Room 2",
+    "default": {
+        'name': "(default)",
+        'limits': {'high': 30, 'warn': 20, 'normal': 10, 'low': 0},
+    },
+    "10-000802776315": {
+        'name': "Living Room 1",
+        'limits': {'high': 31, 'warn': 26, 'normal': 23, 'low': 21},
+    },
+    "10-000802775cc7": {
+        'name': "Living Room 2",
+        'limits': {'high': 31, 'warn': 26, 'normal': 23, 'low': 21},
+    },
+    "28-0316454327ff": {
+        'name': "Freezer",
+        'limits': {'high': -14, 'warn': -18, 'normal': -26, 'low': -32},
+    },
+    "28-03164756d6ff": {
+        'name': "Fridge",
+        'limits': {'high': 9, 'warn': 5.5, 'normal': 2, 'low': 1},
+    },
+    "28-031644fec5ff": {
+        'name': "Kitchen Room",
+        'limits': {'high': 28, 'warn': 25, 'normal': 18, 'low': 15},
+    },
 };
 
 var sensors = {};
@@ -36,17 +58,21 @@ function printf(str, length) {
         process.stdout.write(" ");
 }
 
-function colorize(value) {
-    if(value > 30)
+function colorize(value, limits) {
+    if(value > limits['high'])
         return "\033[1;31m";
 
-    if(value > 20)
+    if(value > limits['warn'])
         return "\033[1;33m";
 
-    if(value > 0)
+    if(value > limits['normal'])
         return "\033[1;32m";
 
-    return "\033[1;34m";
+    if(value > limits['low'])
+        return "\033[1;34m";
+
+    // unknown
+    return "\033[1;36m";
 }
 
 function refresh() {
@@ -68,16 +94,19 @@ function refresh() {
     for(var key in sensors) {
         var sensor = sensors[key];
         var device = key;
+        var limits = devices['default']['limits'];
 
-        if(devices[key])
-            var device = devices[key];
+        if(devices[key]) {
+            device = devices[key]['name'];
+            limits = devices[key]['limits'];
+        }
 
         var date = strDate(sensor['timestamp']);
 
         printf(device, 16);
         printf(": ", 0)
 
-        printf(colorize(sensor['value']));
+        printf(colorize(sensor['value'], limits));
         printf(sensor['value'] + "", 6);
         printf(" °C", 4);
         printf("\033[0m");
@@ -99,6 +128,29 @@ app.get('/update/:device/:timestamp/:value', function (req, res) {
 
     res.end()
     refresh();
+});
+
+app.get('/current', function (req, res) {
+    var data = {};
+
+    for(var key in sensors) {
+        var device = key;
+        var limits = devices['default']['limits'];
+
+        if(devices[key]) {
+            device = devices[key]['name'];
+            limits = devices[key]['limits'];
+        }
+
+        data[device] = {
+            'name': device,
+            'limits': limits,
+        };
+    }
+
+    res.type('json');
+    res.send(JSON.stringify(data));
+    res.end()
 });
 
 //
