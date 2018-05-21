@@ -110,8 +110,9 @@ int sensors_read(char *device) {
 void sensors_push(char *baseurl, time_t timestamp, char *device, int value) {
 	CURL *curl;
 	char url[512];
+    float fvalue = value / 1000.0;
 
-	sprintf(url, "%s/%s/%ld/%d", baseurl, device, timestamp, value);
+	sprintf(url, "%s/%s/%ld/%.2f", baseurl, device, timestamp, fvalue);
 	printf("[+] pushing to: %s\n", url);
 
 	curl = curl_easy_init();
