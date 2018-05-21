@@ -30,8 +30,7 @@
 #define SENSOR_ERROR    -1250
 #define SENSOR_INVALID  -999999
 
-// char *__webpush = "http://10.242.1.4:8081/update";
-char *__webpush = "http://arya.maxux.net/debug";
+char *__webpush = "http://10.241.0.254:30502/sensors";
 
 typedef struct sensors_t {
 	int count;
@@ -113,7 +112,7 @@ void sensors_push(char *baseurl, time_t timestamp, char *device, int value) {
 	char url[512];
 
 	sprintf(url, "%s/%s/%ld/%d", baseurl, device, timestamp, value);
-	printf("[+] saving to: %s\n", url);
+	printf("[+] pushing to: %s\n", url);
 
 	curl = curl_easy_init();
 	curl_easy_setopt(curl, CURLOPT_URL, url);
